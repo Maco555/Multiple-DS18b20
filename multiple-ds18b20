@@ -1,0 +1,112 @@
+#include <SimpleTimer.h>           
+#define BLYNK_PRINT Serial         
+#include <BlynkSimpleEsp8266.h> 
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#define ONE_WIRE_BUS 2
+#define TEMPERATURE_PRECISION 10
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+DeviceAddress Thermometer1 = { 0x28,0x56,0x04,0x07,0xB6,0x01,0x3C,0xAF };
+DeviceAddress Thermometer2 = { 0x28,0x49,0x1D,0x07,0xB6,0x01,0x3C,0x5F };
+DeviceAddress Thermometer3 = { 0x28,0x05,0x63,0x07,0xB6,0x01,0x3C,0x98 };
+DeviceAddress Thermometer4 = { 0x28,0x23,0x0E,0x95,0xF0,0x01,0x3C,0x67 };
+DeviceAddress Thermometer5 = { 0x28,0xBF,0xD9,0x07,0xB6,0x01,0x3C,0xA2 };
+
+
+char auth[] = "";
+char ssid[] = "";
+char pass[] = "";
+
+int roomTemperature;
+float temp1;
+float temp2;
+float temp3;
+float temp4;
+float temp5;
+
+
+SimpleTimer timer;
+
+void setup() {
+  Serial.begin(115200);
+  Blynk.begin(auth, ssid, pass);
+
+  while (Blynk.connect() == false) {
+}
+sensors.begin();
+timer.setInterval(3000L, getSendData);
+sensors.setResolution(10); 
+
+ 
+  if (!sensors.getAddress(Thermometer1, 0)) Serial.println("Unable to find address for Device 0"); 
+  if (!sensors.getAddress(Thermometer2, 1)) Serial.println("Unable to find address for Device 1"); 
+   if (!sensors.getAddress(Thermometer3, 2)) Serial.println("Unable to find address for Device 2"); 
+  if (!sensors.getAddress(Thermometer4, 3)) Serial.println("Unable to find address for Device 3");
+   if (!sensors.getAddress(Thermometer5, 4)) Serial.println("Unable to find address for Device 4"); 
+  
+
+  // set the resolution to 9 bit per device
+  sensors.setResolution(Thermometer1, TEMPERATURE_PRECISION);
+  sensors.setResolution(Thermometer2, TEMPERATURE_PRECISION);
+  sensors.setResolution(Thermometer3, TEMPERATURE_PRECISION);
+  sensors.setResolution(Thermometer4, TEMPERATURE_PRECISION);
+  sensors.setResolution(Thermometer5, TEMPERATURE_PRECISION);
+  
+
+  // On vérifie que le capteur st correctement configuré | Check that ensor is correctly configured
+  Serial.print("Device 0 Resolution: ");
+  Serial.print(sensors.getResolution(Thermometer1), DEC); 
+  Serial.println();
+
+  Serial.print("Device 1 Resolution: ");
+  Serial.print(sensors.getResolution(Thermometer2), DEC); 
+  Serial.println();
+
+  Serial.print("Device 2 Resolution: ");
+  Serial.print(sensors.getResolution(Thermometer3), DEC); 
+  Serial.println();
+
+  Serial.print("Device 3 Resolution: ");
+  Serial.print(sensors.getResolution(Thermometer4), DEC); 
+  Serial.println();
+
+  Serial.print("Device 4 Resolution: ");
+  Serial.print(sensors.getResolution(Thermometer5), DEC); 
+  Serial.println();
+}
+
+
+
+void loop() {
+  Blynk.run();
+  timer.run();
+  Serial.print("Requesting temperatures...");
+  sensors.requestTemperatures();
+  Serial.println("DONE");
+  delay(5000);
+}
+void getSendData()
+{
+  sensors.requestTemperatures(); 
+  temp1 = sensors.getTempC(Thermometer1);
+  Serial.println(temp1);
+  Blynk.virtualWrite(2, temp1);
+  delay(5000); 
+  temp2 = sensors.getTempC(Thermometer2);
+  Serial.println(temp2);
+  Blynk.virtualWrite(3, temp2);
+  delay(5000);
+  temp3 = sensors.getTempC(Thermometer3);
+  Serial.println(temp3);
+  Blynk.virtualWrite(4, temp3);
+  delay(5000);
+  temp4 = sensors.getTempC(Thermometer4);
+  Serial.println(temp4);
+  Blynk.virtualWrite(5, temp4);
+  delay(5000);
+  temp5 = sensors.getTempC(Thermometer5);
+  Serial.println(temp5);
+  Blynk.virtualWrite(6, temp5);
+  delay(5000);
+}
